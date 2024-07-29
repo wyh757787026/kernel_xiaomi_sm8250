@@ -3,35 +3,48 @@
 # Some logics of this script are copied from [scripts/build_kernel]. Thanks to UtsavBalar1231.
 
 # Ensure the script exits on error
+export PATH="/mnt/arm-linux-androideabi-4.9/bin:/mnt/aarch64-linux-android-4.9/bin:/mnt/clang-android/clang-r416183b1/bin:$PATH"
 set -e
+
+blue='\033[0;34m'
+cyan='\033[0;36m'
+yellow='\033[0;33m'
+red='\033[0;31m'
+nocol='\033[0m'
 
 TARGET_DEVICE=$1
 
 if [ -z "$1" ]; then
-    echo "Error: No argument provided, please specific a target device." 
-    echo "If you need KernelSU, please add [ksu] as the second arg."
-    echo "Examples:"
-    echo "Build for lmi(K30 Pro/POCO F2 Pro) without KernelSU:"
-    echo "    bash build.sh lmi"
-    echo "Build for umi(Mi10) with KernelSU:"
-    echo "    bash build.sh umi ksu"
+    echo -e "$blue Error: No argument provided, please specific a target device." 
+    echo -e " If you need KernelSU, please add [ksu] as the second arg."
+    echo -e " Examples:"
+    echo -e " Build for lmi(K30 Pro/POCO F2 Pro) without KernelSU:"
+    echo -e " bash build.sh lmi"
+    echo -e " Build for umi(Mi10) with KernelSU:"
+    echo -e " bash build.sh umi ksu $nocol"
     exit 1
 fi
 
 if ! command -v aarch64-linux-android-ld >/dev/null 2>&1; then
+    echo -e "$blue***********************************************"
     echo "[aarch64-linux-android-ld] does not exist, please check your environment."
+    echo -e "***********************************************$nocol"
     exit 1
 fi
 
 if ! command -v clang >/dev/null 2>&1; then
+    echo -e "$blue***********************************************"
     echo "[clang] does not exist, please check your environment."
+    echo -e "***********************************************$nocol"
     exit 1
 fi
 
 
 if [ ! -f "arch/arm64/configs/${TARGET_DEVICE}_defconfig" ]; then
+    echo -e "$blue***********************************************"
     echo "No target device [${TARGET_DEVICE}] found."
     echo "Avaliable defconfigs, please choose one target from below down:"
+    echo -e "***********************************************$nocol"
     ls arch/arm64/configs/*_defconfig
     exit 1
 fi
@@ -69,7 +82,15 @@ echo "Cleaning..."
 rm -rf out/
 rm -rf anykernel/
 
+echo -e "$blue***********************************************"
 echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/AnyKernel3)"
+echo "export http_proxy=http://proxy_address:port"
+echo "export https_proxy=https://proxy_address:port"
+echo -e "***********************************************$nocol"
+
+git config http.proxy http:/127.0.0.1:7890
+git config https.proxy https:/127.0.0.1:7890
+
 git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --depth=1 anykernel
 
 # ------------- Building for AOSP -------------
